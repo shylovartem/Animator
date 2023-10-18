@@ -21,8 +21,13 @@ import android.widget.TextView;
 
 import com.skylite.animator.R;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
+
+    private String TAG = "MainActivityTAG";
+
 
     private ConstraintLayout constraint_layout;
     private TextView text_label;
@@ -38,13 +43,9 @@ public class MainActivity extends AppCompatActivity {
         // initial setup method calls
         setupDefaultColors();
         initViews();
-
         navigationBarOffset = getNavigationBarHeight(this);
-
         initViewListener();
-
     }
-
 
     @SuppressLint("ClickableViewAccessibility")
     private void initViewListener() {
@@ -58,19 +59,18 @@ public class MainActivity extends AppCompatActivity {
             text_label.setX(x);
             text_label.setY(y);
             startTextViewAnimation(y);
+            Log.d(TAG, "Click on Layout!");
+
             return false;
         });
 
         text_label.setOnClickListener(v -> {
-            if (animatorSet.isRunning()) {
-                animatorSet.cancel();
-            }
-            Log.d("setOnClickListener", "setOnClickListener");
+            animatorSet.pause();
         });
     }
 
     /**
-     * Setup colors for status bar, background, and navigation bar& Setup day theme.
+     * Setup colors for status bar, background, and navigation bar. Setup day theme.
      */
     private void setupDefaultColors() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); // Off status bar
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         ObjectAnimator upAnimation = ObjectAnimator.ofFloat(text_label, View.Y, displayMetrics.heightPixels - navigationBarOffset, 0);
         ObjectAnimator returnAnimation = ObjectAnimator.ofFloat(text_label, View.Y, 0, initialY);
 
-        animatorSet.setDuration(10000);
+        animatorSet.setDuration(4000);
         animatorSet.playSequentially(downAnimation, upAnimation, returnAnimation);
         animatorSet.start();
         animatorSet.addListener(new AnimatorListenerAdapter() {
@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationCancel(Animator animation) {
                 super.onAnimationCancel(animation);
-
             }
         });
     }
