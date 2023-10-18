@@ -8,6 +8,9 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.TextView;
 
+/**
+ * Class contains methods for animate TextView according task
+ */
 public class AnimationUtil {
 
     private final AnimatorSet animatorSet;
