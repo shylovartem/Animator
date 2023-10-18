@@ -1,38 +1,21 @@
 package com.skylite.animator.controller;
 
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.WindowManager;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.TextView;
-
 import com.skylite.animator.R;
-
-import java.util.ArrayList;
-
 
 public class MainActivity extends AppCompatActivity {
 
-    private String TAG = "MainActivityTAG";
-
-
+    private AnimationUtil animationUtil;
     private ConstraintLayout constraint_layout;
     private TextView text_label;
-    private int navigationBarOffset = 0;
-    AnimatorSet animatorSet = new AnimatorSet();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,30 +26,33 @@ public class MainActivity extends AppCompatActivity {
         // initial setup method calls
         setupDefaultColors();
         initViews();
-        navigationBarOffset = getNavigationBarHeight(this);
         initViewListener();
+        initMembers();
+    }
+
+    private void initMembers() {
+        animationUtil = new AnimationUtil(text_label);
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private void initViewListener() {
         constraint_layout.setOnTouchListener((view, event) -> {
-            if (animatorSet.isRunning()) {
-                animatorSet.cancel();
+            if (animationUtil.getAnimationSet().isRunning()) {
+                animationUtil.getAnimationSet().cancel();
             }
-            changeTextColor();
+
+            TextViewTransformationUtil.changeTextColor(text_label);
+
             float x = event.getX();
             float y = event.getY();
             text_label.setX(x);
             text_label.setY(y);
-            startTextViewAnimation(y);
-            Log.d(TAG, "Click on Layout!");
 
+            animationUtil.startTextViewAnimation(y, 5000);
             return false;
         });
 
-        text_label.setOnClickListener(v -> {
-            animatorSet.pause();
-        });
+        text_label.setOnClickListener(v -> animationUtil.getAnimationSet().pause());
     }
 
     /**
@@ -79,44 +65,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Change text color by click
-     */
-    private void changeTextColor() {
-        if (this.getResources().getConfiguration().getLocales().get(0).getLanguage().equals("ru")) {
-            text_label.setTextColor(Color.BLUE);
-        } else {
-            text_label.setTextColor(Color.RED);
-        }
-    }
-
-    /**
-     * Start animation according task
-     */
-    private void startTextViewAnimation(float initialY) {
-        DisplayMetrics displayMetrics = this.getResources().getDisplayMetrics();
-
-        ObjectAnimator downAnimation = ObjectAnimator.ofFloat(text_label, View.Y, initialY, displayMetrics.heightPixels - navigationBarOffset);
-        ObjectAnimator upAnimation = ObjectAnimator.ofFloat(text_label, View.Y, displayMetrics.heightPixels - navigationBarOffset, 0);
-        ObjectAnimator returnAnimation = ObjectAnimator.ofFloat(text_label, View.Y, 0, initialY);
-
-        animatorSet.setDuration(4000);
-        animatorSet.playSequentially(downAnimation, upAnimation, returnAnimation);
-        animatorSet.start();
-        animatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                animatorSet.start();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                super.onAnimationCancel(animation);
-            }
-        });
-    }
-
-    /**
      * Wiring layout views with activity code
      */
     private void initViews() {
@@ -124,12 +72,4 @@ public class MainActivity extends AppCompatActivity {
         text_label = findViewById(R.id.text_label);
     }
 
-    public int getNavigationBarHeight(Context context) {
-        Resources resources = context.getResources();
-        @SuppressLint({"InternalInsetResource", "DiscouragedApi"}) int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            return resources.getDimensionPixelSize(resourceId);
-        }
-        return 0;
-    }
 }
